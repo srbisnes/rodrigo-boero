@@ -1,0 +1,6 @@
+{
+  "name": "Plataforma de Inteligencia Geopolítica y Enjambre de Agentes",
+  "description": "Panel táctico global interconectado con un enjambre de agentes de IA para monitorizar zonas de guerra, economía, criptoactivos, materias primas, infraestructuras de internet y desastres climatológicos en directo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
