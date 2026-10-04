@@ -1,466 +1,167 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Activity, AlertTriangle, ArrowUpRight, CheckCircle2, CircleDot, Cpu, FileText, Globe2, Layers3, LockKeyhole, Network, Radar, ShieldCheck, Sparkles, Target, TrendingUp, Users } from 'lucide-react';
 import {
-  INITIAL_WAR_ZONES,
-  INITIAL_CABLES,
-  INITIAL_EARTHQUAKES,
-  INITIAL_CLIMATE_ANOMALIES,
-  INITIAL_ECONOMY,
-  INITIAL_TRAVEL_WARNINGS,
-  INSTALLED_AGENTS
+  INITIAL_WAR_ZONES, INITIAL_CABLES, INITIAL_EARTHQUAKES,
+  INITIAL_CLIMATE_ANOMALIES, INITIAL_ECONOMY, INITIAL_TRAVEL_WARNINGS, INSTALLED_AGENTS
 } from './data/intelligence';
-import {
-  WarZone,
-  UnderseaCable,
-  EarthquakeData,
-  ClimateAnomaly,
-  TravelWarning,
-  EconomyCryptoInfo
-} from './types';
 import GlobalMap from './components/GlobalMap';
 import AgentSwarm from './components/AgentSwarm';
-import LiveChat from './components/LiveChat';
+import { healthScore } from './lib/platform';
 
-import {
-  ShieldAlert,
-  Coins,
-  Cpu,
-  Activity,
-  Compass,
-  Zap,
-  Globe,
-  AlertTriangle,
-  FileSpreadsheet,
-  CheckCircle,
-  HelpCircle,
-  Ship,
-  TrendingUp,
-  MapPin,
-  ExternalLink
-} from 'lucide-react';
+type AssetType = 'war' | 'cable' | 'earthquake' | 'climate' | 'travel';
+
+const pillars = [
+  { icon: Radar, title: 'Detect', text: 'Normaliza señales geopolíticas, ambientales, económicas e infraestructura crítica.' },
+  { icon: Cpu, title: 'Reason', text: 'Seis agentes especializados analizan la misma situación desde perspectivas distintas.' },
+  { icon: Network, title: 'Correlate', text: 'Cruza eventos para encontrar relaciones, dependencia y concentración de riesgo.' },
+  { icon: Target, title: 'Decide', text: 'Convierte señales complejas en escenarios, prioridades y acciones verificables.' }
+];
+
+const roadmap = [
+  ['0–3 meses', 'Foundation', 'Fuentes reales, data contracts, observabilidad, autenticación y audit trail.'],
+  ['3–6 meses', 'Pilot', 'Piloto con 2–3 clientes, alertas, workflows y evaluación de precisión.'],
+  ['6–12 meses', 'Enterprise', 'Multi-tenant, APIs, RBAC, SLA, billing y conectores de inteligencia.'],
+  ['12–18 meses', 'Scale', 'Modelos de riesgo propios, marketplace de agentes y expansión regional.']
+];
 
 export default function App() {
-  // Database State
-  const [warZones, setWarZones] = useState<WarZone[]>(INITIAL_WAR_ZONES);
-  const [cables, setCables] = useState<UnderseaCable[]>(INITIAL_CABLES);
-  const [earthquakes, setEarthquakes] = useState<EarthquakeData[]>(INITIAL_EARTHQUAKES);
-  const [climateAnomalies, setClimateAnomalies] = useState<ClimateAnomaly[]>(INITIAL_CLIMATE_ANOMALIES);
-  const [travelWarnings, setTravelWarnings] = useState<TravelWarning[]>(INITIAL_TRAVEL_WARNINGS);
-  const [economy, setEconomy] = useState<EconomyCryptoInfo>(INITIAL_ECONOMY);
-  const [agents, setAgents] = useState(INSTALLED_AGENTS);
+  const [warZones] = useState(INITIAL_WAR_ZONES);
+  const [cables] = useState(INITIAL_CABLES);
+  const [earthquakes] = useState(INITIAL_EARTHQUAKES);
+  const [climateAnomalies] = useState(INITIAL_CLIMATE_ANOMALIES);
+  const [travelWarnings] = useState(INITIAL_TRAVEL_WARNINGS);
+  const [economy] = useState(INITIAL_ECONOMY);
+  const [agents] = useState(INSTALLED_AGENTS);
+  const [now, setNow] = useState(new Date());
+  const [selectedAsset, setSelectedAsset] = useState({ type: 'war' as AssetType, data: INITIAL_WAR_ZONES[0] });
+  const [systemLogs, setSystemLogs] = useState(['Demo dataset loaded.', 'Agent swarm ready: 6 analytical roles.', 'Production adapters: planned / not connected.']);
 
-  // Selected asset state for Viewfinder
-  const [selectedAsset, setSelectedAsset] = useState<{
-    type: 'war' | 'cable' | 'earthquake' | 'climate' | 'travel' | 'none';
-    data: any;
-  }>({
-    type: 'war',
-    data: INITIAL_WAR_ZONES[0] // default with a high-impact war zone
-  });
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
 
-  // Action logs for system display
-  const [systemLogs, setSystemLogs] = useState<string[]>([
-    'Iniciando terminal receptor táctico bionavegable...',
-    'Actualizados feeds de materias primas y criptodivisas.',
-    'Canales de enlace del enjambre de agentes Aegis, Kratos, Midas, Poseidón, Gaia e Hermes calibrados.'
-  ]);
+  const health = useMemo(() => healthScore({ sourceAdapters: 2, agents: agents.length, observability: true, auditTrail: false }), [agents.length]);
 
   const addSystemLog = (msg: string) => {
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    setSystemLogs(prev => [`[${timestamp}] ${msg}`, ...prev].slice(0, 30));
+    setSystemLogs(prev => [('[' + new Date().toLocaleTimeString() + '] ' + msg), ...prev].slice(0, 30));
   };
 
-  // Sync selected map elements to viewfinder
-  const handleSelectMapNode = (type: 'war' | 'cable' | 'earthquake' | 'climate' | 'travel', data: any) => {
+  const selectNode = (type: AssetType, data: any) => {
     setSelectedAsset({ type, data });
-    addSystemLog(`Foco de atención operacional reubicado: "${data.name || data.location || data.region}" (${type.toUpperCase()})`);
+    addSystemLog('Focus changed: ' + (data.name || data.location || data.region || type));
   };
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-slate-100 font-sans p-3 md:p-6 selection:bg-emerald-500 selection:text-black">
-      
-      {/* 1. APP BAR HEADER SYSTEM */}
-      <header className="border-b border-gray-900 pb-4 mb-6" id="ops-header-section">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          
-          {/* Logo and Core State Status */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <Cpu className="w-6 h-6 animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg md:text-xl font-mono font-bold tracking-wider text-white uppercase">
-                  SWARM INTEL PLATFORM
-                </h1>
-                <span className="bg-red-500/10 text-red-500 text-[9px] font-mono font-semibold px-2 py-0.5 rounded border border-red-500/20 uppercase tracking-widest animate-pulse">
-                  Alerta Global Nivel III
-                </span>
-              </div>
-              <p className="text-xs text-gray-400 font-mono">
-                Enjambre de 6 agentes analíticos de IA co-monitoreando conflictos e infraestructura crítica
-              </p>
-            </div>
-          </div>
-
-          {/* Satellite Telemetry indicators */}
-          <div className="flex flex-wrap items-center gap-4 font-mono text-[10px]">
-            <div className="bg-[#0b0f19] border border-gray-900 px-3 py-1.5 rounded-lg flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-              <span className="text-gray-400">SAT STATUS:</span>
-              <span className="text-emerald-400 font-bold">CONECTADO</span>
-            </div>
-            <div className="bg-[#0b0f19] border border-gray-900 px-3 py-1.5 rounded-lg text-gray-400">
-              UTC TIME: <span className="text-white font-bold">{new Date().toISOString().substring(11, 19)}</span>
-            </div>
-          </div>
-
-        </div>
-
-        {/* 2. LIVE ECONOMIC & COMMODITIES FEEDS TICKER */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mt-4" id="live_economic_ticker_widget">
-          {/* Brent Oil */}
-          <div className="bg-[#0b101c] p-2.5 rounded-lg border border-gray-800 flex flex-col justify-between hover:border-emerald-500/30 transition">
-            <span className="text-[9px] font-mono text-gray-500 tracking-wider">MATERIA PRIMA (PETRÓLEO)</span>
-            <div className="flex justify-between items-baseline mt-1">
-              <span className="text-sm font-bold text-white tracking-tight">{economy.commodities.oil}</span>
-              <span className="text-[9px] text-green-400 font-mono flex items-center"><TrendingUp className="w-2 h-2 mr-0.5" />+1.4%</span>
-            </div>
-          </div>
-
-          {/* Gold */}
-          <div className="bg-[#0b101c] p-2.5 rounded-lg border border-gray-800 flex flex-col justify-between hover:border-emerald-500/30 transition">
-            <span className="text-[9px] font-mono text-gray-500 tracking-wider">MATERIA PRIMA (ORO REF.)</span>
-            <div className="flex justify-between items-baseline mt-1">
-              <span className="text-sm font-bold text-white tracking-tight">{economy.commodities.gold}</span>
-              <span className="text-[9px] text-green-400 font-mono flex items-center"><TrendingUp className="w-2 h-2 mr-0.5" />+1.6%</span>
-            </div>
-          </div>
-
-          {/* Copper */}
-          <div className="bg-[#0b101c] p-2.5 rounded-lg border border-gray-800 flex flex-col justify-between hover:border-emerald-500/30 transition">
-            <span className="text-[9px] font-mono text-gray-500 tracking-wider">MATERIA PRIMA (COBRE CAT.)</span>
-            <div className="flex justify-between items-baseline mt-1">
-              <span className="text-sm font-bold text-white tracking-tight">{economy.commodities.copper}</span>
-              <span className="text-[9px] text-gray-500 font-mono">ESTABLE</span>
-            </div>
-          </div>
-
-          {/* Gas */}
-          <div className="bg-[#0b101c] p-2.5 rounded-lg border border-gray-800 flex flex-col justify-between hover:border-emerald-500/30 transition">
-            <span className="text-[9px] font-mono text-gray-500 tracking-wider">COMBUSTIBLE (GAS NAT.)</span>
-            <div className="flex justify-between items-baseline mt-1">
-              <span className="text-sm font-bold text-white tracking-tight">{economy.commodities.gas}</span>
-              <span className="text-[9px] text-green-400 font-mono flex items-center"><TrendingUp className="w-2 h-2 mr-0.5" />+2.8%</span>
-            </div>
-          </div>
-
-          {/* Bitcoin */}
-          <div className="bg-[#0b101c] p-2.5 rounded-lg border border-gray-800 flex flex-col justify-between hover:border-emerald-500/30 transition">
-            <span className="text-[9px] font-mono text-gray-500 tracking-wider">CRIPTO INTEL (BTC/USD)</span>
-            <div className="flex justify-between items-baseline mt-1">
-              <span className="text-sm font-bold text-emerald-400 tracking-tight">{economy.crypto.btc}</span>
-              <span className="text-[9px] text-green-400 font-mono flex items-center"><TrendingUp className="w-2 h-2 mr-0.5" />+0.5%</span>
-            </div>
-          </div>
-
-          {/* Ethereum */}
-          <div className="bg-[#0b101c] p-2.5 rounded-lg border border-gray-800 flex flex-col justify-between hover:border-emerald-500/30 transition">
-            <span className="text-[9px] font-mono text-gray-500 tracking-wider">CRIPTO INTEL (ETH/USD)</span>
-            <div className="flex justify-between items-baseline mt-1">
-              <span className="text-sm font-bold text-emerald-400 tracking-tight">{economy.crypto.eth}</span>
-              <span className="text-[9px] text-green-400 font-mono flex items-center"><TrendingUp className="w-2 h-2 mr-0.5" />+0.8%</span>
-            </div>
-          </div>
-
-          {/* Solana */}
-          <div className="bg-[#0b101c] p-2.5 rounded-lg border border-gray-800 flex flex-col justify-between hover:border-emerald-500/30 transition">
-            <span className="text-[9px] font-mono text-gray-500 tracking-wider">CRIPTO INTEL (SOL/USD)</span>
-            <div className="flex justify-between items-baseline mt-1">
-              <span className="text-sm font-bold text-emerald-400 tracking-tight">{economy.crypto.sol}</span>
-              <span className="text-[9px] text-green-400 font-mono flex items-center"><TrendingUp className="w-2 h-2 mr-0.5" />+2.1%</span>
-            </div>
-          </div>
-
-          {/* Stable Volume */}
-          <div className="bg-[#0b101c] p-2.5 rounded-lg border border-gray-800 flex flex-col justify-between hover:border-emerald-500/30 transition col-span-2 sm:col-span-1">
-            <span className="text-[9px] font-mono text-gray-500 tracking-wider">LIQUIDEZ GUERRA (USDT VOL)</span>
-            <div className="flex justify-between items-baseline mt-1">
-              <span className="text-xs font-mono font-bold text-teal-400 font-bold">{economy.crypto.usdtVolume}</span>
-            </div>
+    <div className="min-h-screen bg-[#05070b] text-slate-100 font-sans selection:bg-emerald-400 selection:text-black">
+      <div className="sticky top-0 z-40 border-b border-white/10 bg-[#05070b]/90 backdrop-blur-xl">
+        <div className="mx-auto max-w-[1600px] px-4 py-3 flex items-center justify-between gap-4">
+          <a href="#top" className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl border border-emerald-400/30 bg-emerald-400/10 grid place-items-center"><Radar className="h-5 w-5 text-emerald-300" /></div>
+            <div><div className="text-sm font-black tracking-[0.18em]">SWARM INTEL</div><div className="text-[10px] text-slate-500 tracking-wider">DECISION INTELLIGENCE PLATFORM</div></div>
+          </a>
+          <nav className="hidden md:flex items-center gap-5 text-[11px] text-slate-400">
+            <a href="#overview" className="hover:text-white">Overview</a><a href="#intelligence" className="hover:text-white">Intelligence</a>
+            <a href="#agents" className="hover:text-white">Agents</a><a href="#roadmap" className="hover:text-white">Roadmap</a><a href="#docs" className="hover:text-white">Docs</a>
+          </nav>
+          <div className="flex items-center gap-2 text-[10px] font-mono">
+            <span className="px-2 py-1 rounded-md border border-amber-400/30 bg-amber-400/10 text-amber-300">DEMO DATA</span>
+            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-md border border-emerald-400/20 bg-emerald-400/5 text-emerald-300"><CircleDot className="h-3 w-3" /> SYSTEM {health}%</span>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* 3. MAIN DASHBOARD SPLIT: INTERACTIVE TACTICAL WORLD MAP & DATA VIEWFINDER */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6" id="tactical_map_viewfinder_row">
-        
-        {/* Geographic Map overlay (8cols on desktop) */}
-        <div className="lg:col-span-8">
-          <GlobalMap
-            warZones={warZones}
-            cables={cables}
-            earthquakes={earthquakes}
-            climateAnomalies={climateAnomalies}
-            travelWarnings={travelWarnings}
-            onSelectNode={handleSelectMapNode}
-          />
-        </div>
-
-        {/* Tactical data Viewfinder monitor side-car (4cols on desktop) */}
-        <div className="lg:col-span-4 bg-[#0a0d16] border border-gray-850 rounded-xl p-4 flex flex-col justify-between min-h-[420px]" id="data_tactical_viewfinder">
-          <div className="h-full flex flex-col justify-between">
-            <div>
-              {/* Header */}
-              <div className="border-b border-gray-900 pb-3 mb-4 flex items-center justify-between">
-                <span className="text-xs font-mono text-emerald-400 font-bold tracking-widest flex items-center gap-1.5">
-                  <Globe className="w-4 h-4 text-emerald-400 animate-spin duration-3000" /> VISOR TÁCTICO DE SECTOR
-                </span>
-                <span className="text-[9px] font-mono bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-bold uppercase tracking-wider">
-                  {selectedAsset.type}
-                </span>
-              </div>
-
-              {/* Dynamic asset layout based on what was selected in the map nodes */}
-              {selectedAsset.type === 'war' && (
-                <div className="space-y-3 font-mono text-xs text-gray-300 leading-relaxed">
-                  <h4 className="text-sm font-bold text-rose-400 border-l-2 border-red-500 pl-2 leading-tight">
-                    {selectedAsset.data.name}
-                  </h4>
-                  <p className="text-gray-400 italic text-[11px]">"{selectedAsset.data.description}"</p>
-                  
-                  <div className="bg-slate-950 p-2.5 rounded border border-gray-900 space-y-1 text-[11px]">
-                    <span className="text-rose-400 font-bold block uppercase tracking-wider text-[10px]">&gt; SISTEMAS DE ARMAMENTO MILITAR:</span>
-                    <ul className="list-disc list-inside space-y-0.5 text-gray-300">
-                      {selectedAsset.data.weaponsInvolved.map((w: string, i: number) => (
-                        <li key={i}>{w}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <p className="text-[11px]"><span className="text-emerald-400">&gt; DAÑO ECONÓMICO DIRECTO:</span> {selectedAsset.data.economicImpact}</p>
-                    <p className="text-[11px]"><span className="text-amber-500">&gt; SECTOR DE TRÁFICO DE ARMAS:</span> {selectedAsset.data.trafficSector}</p>
-                    <p className="text-[11px]"><span className="text-gray-400">&gt; BELIGERANTES CONSTATADOS:</span> {selectedAsset.data.parties.join(' vs ')}</p>
-                  </div>
-                </div>
-              )}
-
-              {selectedAsset.type === 'cable' && (
-                <div className="space-y-3 font-mono text-xs text-gray-300 leading-relaxed">
-                  <h4 className="text-sm font-bold text-blue-400 border-l-2 border-blue-500 pl-2 leading-tight">
-                    Cable: {selectedAsset.data.name}
-                  </h4>
-                  <p className="text-[11px]"><span className="text-blue-400">&gt; TIPO DE LÍNEA:</span> {selectedAsset.data.type === 'fiber-optic' ? 'Transmisión de Fibra Óptica' : 'Distribución Eléctrica'}</p>
-                  <p className="text-[11px]"><span className="text-blue-400">&gt; CAPACIDAD DE TRÁFICO:</span> {selectedAsset.data.speed}</p>
-
-                  <div className="bg-slate-950 p-2.5 rounded border border-gray-900 text-[11px] space-y-1">
-                    <span className="text-amber-400 font-bold block text-[10px]">&gt; ANÁLISIS DE VULNERABILIDAD SUBMARINA:</span>
-                    <p className="text-gray-400 italic">"{selectedAsset.data.riskFactor}"</p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-gray-400 block text-[10px] uppercase font-bold">&gt; PUNTOS DE DESEMBARQUE CRÍTICOS:</span>
-                    <p className="text-gray-300 text-[11px] italic">{selectedAsset.data.landingPoints.join(' • ')}</p>
-                  </div>
-                </div>
-              )}
-
-              {selectedAsset.type === 'earthquake' && (
-                <div className="space-y-3 font-mono text-xs text-gray-300 leading-relaxed">
-                  <h4 className="text-sm font-bold text-indigo-400 border-l-2 border-indigo-500 pl-2 leading-tight">
-                    Sismo: {selectedAsset.data.location}
-                  </h4>
-                  <div className="flex justify-between items-center bg-indigo-500/10 p-2 rounded border border-indigo-500/20">
-                    <span className="text-indigo-400 font-bold text-xs">MAGNITUD: {selectedAsset.data.magnitude} Richter</span>
-                    <span className="text-gray-400 text-[10px]">Profundidad: {selectedAsset.data.depthStr}</span>
-                  </div>
-                  <p className="text-gray-400 text-[11px] italic">Sucedido hace: {selectedAsset.data.timestamp}</p>
-
-                  <div className="bg-slate-950 p-2.5 rounded border border-gray-900 text-[11px] space-y-1.5">
-                    <span className="text-indigo-400 font-semibold block text-[10px] uppercase">&gt; IMPACTO CLIMÁTICO Y MAREMOTRIZ:</span>
-                    <p className="text-gray-300 leading-snug">"{selectedAsset.data.climateImpact}"</p>
-                  </div>
-                </div>
-              )}
-
-              {selectedAsset.type === 'climate' && (
-                <div className="space-y-3 font-mono text-xs text-gray-300 leading-relaxed">
-                  <h4 className="text-sm font-bold text-rose-400 border-l-2 border-rose-500 pl-2 leading-tight">
-                    Anomalía: {selectedAsset.data.name}
-                  </h4>
-                  <div className="bg-slate-950 p-2.5 rounded border border-gray-950 text-[11px] space-y-1">
-                    <span className="text-rose-400 font-bold block text-[10px]">&gt; DIAGNÓSTICO METEOROLÓGICO:</span>
-                    <p className="text-gray-300">"{selectedAsset.data.statusDescription}"</p>
-                  </div>
-                </div>
-              )}
-
-              {selectedAsset.type === 'travel' && (
-                <div className="space-y-3 font-mono text-xs text-gray-300 leading-relaxed">
-                  <h4 className="text-sm font-bold text-amber-400 border-l-2 border-amber-500 pl-2 leading-tight font-sans">
-                    Región: {selectedAsset.data.region}
-                  </h4>
-                  <div className="flex gap-2">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                      selectedAsset.data.status === 'critical-avoid' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/30'
-                    }`}>
-                      EVITAR - CRÍTICO
-                    </span>
-                    <span className="bg-slate-900 text-gray-400 px-2 py-0.5 rounded text-[10px] uppercase border border-gray-800">
-                      CÓDIGO: {selectedAsset.data.countryCode}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <span className="text-emerald-400 text-[10px] uppercase font-bold block">&gt; RUTA SECO DE DESVIACIÓN RECOMENDADA:</span>
-                    <ul className="list-disc list-inside space-y-1 text-gray-400 text-[11px]">
-                      {selectedAsset.data.safeRoutes.map((r: string, i: number) => (
-                        <li key={i}>{r}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="bg-slate-950 p-2 text-[11px] rounded border border-gray-900 space-y-1">
-                    <span className="text-amber-500 font-bold text-[10px] uppercase block">&gt; MEDIDAS DE PRECAUCIÓN CORPORALES:</span>
-                    <ul className="list-decimal list-inside space-y-0.5">
-                      {selectedAsset.data.recommendations.map((rec: string, i: number) => (
-                        <li key={i} className="text-gray-300">{rec}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Quick help diagnostic line */}
-            <div className="mt-4 pt-3 border-t border-gray-900 text-[10px] font-mono text-gray-500 leading-normal">
-              <p className="flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> Presione sobre los nodos de color en el radar global para actualizar este panel.
-              </p>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      {/* 4. SHARP ACTION CENTRE: INTERACTIVE AGENT SWARM SYSTEM */}
-      <section className="mb-6" id="intelligent_agent_swarm_central_panel">
-        <AgentSwarm
-          agents={agents}
-          onAddSystemLogMsg={addSystemLog}
-        />
-      </section>
-
-      {/* 5. LIVE FREQUENCY CHAT ROOM & DIAGNOSTIC DIRECT ACTION FEEDS */}
-      <section className="mb-6 grid grid-cols-1 gap-5" id="live_interactive_chat_operators_board">
-        <LiveChat
-          systemMessages={systemLogs}
-          onAddSystemLogMsg={addSystemLog}
-        />
-      </section>
-
-      {/* 6. IMMERSIVE COMPREHENSIVE RECON DATA ACCORDION / GRID */}
-      <section className="bg-[#0a0d16] border border-gray-800 rounded-xl p-5" id="extended_strategic_catalogs">
-        <div className="flex items-center gap-2 border-b border-gray-900 pb-3 mb-4 shrink-0">
-          <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+      <main id="top" className="mx-auto max-w-[1600px] px-4 py-8 md:py-12">
+        <section id="overview" className="grid lg:grid-cols-[1.25fr_.75fr] gap-8 items-end mb-10 scroll-mt-24">
           <div>
-            <h4 className="text-sm font-mono font-bold text-gray-200 uppercase tracking-widest">
-              DIAGRAMADO DETALLADO DE VECTORES DE SEGURIDAD
-            </h4>
-            <p className="text-xs text-gray-500">Mapeado de activos, cables marítimos de datos y rutas a evitar</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          
-          {/* Wars catalogue */}
-          <div className="space-y-3 font-mono text-xs">
-            <div className="text-rose-400 font-bold border-b border-rose-950/40 pb-1.5 uppercase flex items-center gap-1.5">
-              <ShieldAlert className="w-4 h-4" /> &gt; TERRITORIOS EN GUERRA
-            </div>
-            <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
-              {warZones.map(w => (
-                <div key={w.id} className="bg-slate-950/70 p-2.5 rounded border border-red-950/20 hover:border-red-500/20 cursor-pointer transition" onClick={() => handleSelectMapNode('war', w)}>
-                  <p className="font-bold text-gray-200 mb-0.5">{w.name}</p>
-                  <p className="text-[10px] text-gray-400 leading-normal mb-1">{w.description.substring(0, 60)}...</p>
-                  <p className="text-[9px] text-rose-400 font-semibold uppercase">Severidad: {w.severity}</p>
-                </div>
-              ))}
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/5 px-3 py-1.5 text-[10px] font-mono text-emerald-300 mb-5"><Sparkles className="h-3.5 w-3.5" /> AI-ASSISTED RISK OPERATIONS</div>
+            <h1 className="max-w-5xl text-4xl md:text-6xl font-black tracking-[-0.04em] leading-[0.95]">From global signals to <span className="text-emerald-300">decision-ready intelligence.</span></h1>
+            <p className="max-w-3xl mt-5 text-base md:text-lg leading-7 text-slate-400">Una plataforma de inteligencia operativa que correlaciona eventos globales, infraestructura crítica y variables económicas para ayudar a equipos a detectar riesgo, evaluar escenarios y actuar antes.</p>
+            <div className="flex flex-wrap gap-3 mt-6">
+              <a href="#intelligence" className="inline-flex items-center gap-2 rounded-xl bg-emerald-300 px-4 py-2.5 text-sm font-bold text-black hover:bg-emerald-200">Abrir command center <ArrowUpRight className="h-4 w-4" /></a>
+              <a href="#roadmap" className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-200 hover:bg-white/5">Ver roadmap</a>
             </div>
           </div>
-
-          {/* Undersea cables catalogue */}
-          <div className="space-y-3 font-mono text-xs">
-            <div className="text-blue-400 font-bold border-b border-blue-950/40 pb-1.5 uppercase flex items-center gap-1.5">
-              <Zap className="w-4 h-4" /> &gt; CABLES SUBMARINOS NET
+          <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+            <div className="flex justify-between items-center mb-5"><span className="text-[10px] font-mono tracking-[0.18em] text-slate-500">SYSTEM TELEMETRY</span><span className="text-[10px] font-mono text-slate-500">{now.toISOString().replace('T',' ').slice(0,19)}Z</span></div>
+            <div className="grid grid-cols-2 gap-3">
+              {['6|specialist agents','5|risk domains','4|decision layers','24/7|target operation'].map(item => {
+                const parts = item.split('|');
+                return <div key={parts[1]} className="rounded-xl border border-white/5 bg-black/20 p-4"><div className="text-2xl font-black text-white">{parts[0]}</div><div className="text-[10px] uppercase tracking-wider text-slate-500 mt-1">{parts[1]}</div></div>;
+              })}
             </div>
-            <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
-              {cables.map(c => (
-                <div key={c.id} className="bg-slate-950/70 p-2.5 rounded border border-blue-950/20 hover:border-blue-500/20 cursor-pointer transition" onClick={() => handleSelectMapNode('cable', c)}>
-                  <div className="flex justify-between items-center mb-0.5">
-                    <p className="font-bold text-gray-200">{c.name}</p>
-                    <span className="text-[8px] bg-slate-900 border border-gray-800 px-1 py-0.2 rounded font-bold text-gray-400">{c.speed}</span>
-                  </div>
-                  <p className="text-[10px] text-gray-400 leading-normal mb-1">Puntos: {c.landingPoints.slice(0, 2).join(', ')}...</p>
-                  <span className={`text-[9px] font-bold uppercase ${
-                    c.status === 'operational' ? 'text-emerald-400' : c.status === 'under-threat' ? 'text-amber-400' : 'text-red-400'
-                  }`}>
-                    Estado: {c.status}
-                  </span>
-                </div>
-              ))}
+            <div className="mt-4 flex items-center gap-2 text-[10px] text-amber-300"><AlertTriangle className="h-3.5 w-3.5" /> Demo mode: replace synthetic feeds with authenticated source adapters before production use.</div>
+          </div>
+        </section>
+
+        <section className="grid md:grid-cols-4 gap-3 mb-8">
+          {pillars.map(({icon: Icon, title, text}) => <article key={title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 hover:border-emerald-400/20 transition"><Icon className="h-5 w-5 text-emerald-300 mb-4" /><h2 className="font-bold">{title}</h2><p className="text-xs leading-5 text-slate-500 mt-2">{text}</p></article>)}
+        </section>
+
+        <section className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 mb-6">
+          {[
+            ['BRENT', economy.commodities.oil], ['GOLD', economy.commodities.gold], ['COPPER', economy.commodities.copper], ['GAS', economy.commodities.gas],
+            ['BTC', economy.crypto.btc], ['ETH', economy.crypto.eth], ['SOL', economy.crypto.sol], ['USDT VOL', economy.crypto.usdtVolume]
+          ].map(([label,value]) => <div key={label} className="rounded-xl border border-white/10 bg-[#090c12] p-3"><div className="text-[9px] text-slate-600 font-mono">{label}</div><div className="mt-1 text-sm font-bold text-slate-200">{value}</div><div className="mt-1 text-[9px] text-emerald-300 flex items-center gap-1"><TrendingUp className="h-2.5 w-2.5" /> reference</div></div>)}
+        </section>
+
+        <section id="intelligence" className="scroll-mt-24 mb-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-4">
+            <div><div className="text-[10px] font-mono tracking-[0.18em] text-emerald-300">01 / INTELLIGENCE FABRIC</div><h2 className="text-2xl md:text-3xl font-black mt-1">Global risk command center</h2><p className="text-sm text-slate-500 mt-2">Mapa + evidencia contextual + catálogo operacional. Seleccioná un evento para inspeccionarlo.</p></div>
+            <div className="flex items-center gap-2 text-[10px] font-mono text-slate-500"><ShieldCheck className="h-4 w-4 text-emerald-300" /> SOURCE GOVERNANCE: DEMO</div>
+          </div>
+          <div className="grid lg:grid-cols-12 gap-4">
+            <div className="lg:col-span-8"><GlobalMap warZones={warZones} cables={cables} earthquakes={earthquakes} climateAnomalies={climateAnomalies} travelWarnings={travelWarnings} onSelectNode={selectNode} /></div>
+            <div className="lg:col-span-4 rounded-2xl border border-white/10 bg-[#090c12] p-5 min-h-[420px]">
+              <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-5"><div className="flex items-center gap-2 text-[10px] font-mono tracking-wider text-emerald-300"><Globe2 className="h-4 w-4" /> EVIDENCE VIEWER</div><span className="text-[9px] uppercase text-amber-300 border border-amber-300/20 bg-amber-300/5 rounded px-2 py-1">synthetic</span></div>
+              <AssetPanel asset={selectedAsset} />
+              <div className="mt-6 pt-4 border-t border-white/5 text-[10px] leading-5 text-slate-600">Production requirement: every observation must carry source, observedAt, confidence, freshness and provenance metadata.</div>
             </div>
           </div>
+        </section>
 
-          {/* Earthquakes catalogue */}
-          <div className="space-y-3 font-mono text-xs">
-            <div className="text-indigo-400 font-bold border-b border-indigo-950/40 pb-1.5 uppercase flex items-center gap-1.5">
-              <Activity className="w-4 h-4" /> &gt; ACTIVIDAD SÍSMICA RECIENTE
-            </div>
-            <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
-              {earthquakes.map(eq => (
-                <div key={eq.id} className="bg-slate-950/70 p-2.5 rounded border border-indigo-950/20 hover:border-indigo-500/20 cursor-pointer transition" onClick={() => handleSelectMapNode('earthquake', eq)}>
-                  <p className="font-bold text-gray-200 mb-0.5">{eq.location}</p>
-                  <p className="text-[10px] text-gray-400 leading-normal mb-1">{eq.climateImpact.substring(0, 60)}...</p>
-                  <div className="flex justify-between text-[9px] text-indigo-400 font-semibold">
-                    <span>MAGNITUD: {eq.magnitude} Richter</span>
-                    <span>{eq.timestamp}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        <section id="agents" className="scroll-mt-24 mb-8">
+          <div className="mb-4"><div className="text-[10px] font-mono tracking-[0.18em] text-emerald-300">02 / AGENT ORCHESTRATION</div><h2 className="text-2xl md:text-3xl font-black mt-1">Six specialists. One operational picture.</h2></div>
+          <AgentSwarm agents={agents} onAddSystemLogMsg={addSystemLog} />
+        </section>
 
-          {/* Travel warning catalogue */}
-          <div className="space-y-3 font-mono text-xs">
-            <div className="text-amber-400 font-bold border-b border-amber-950/40 pb-1.5 uppercase flex items-center gap-1.5">
-              <Compass className="w-4 h-4" /> &gt; RECOMENDACIONES DE VIAJE
-            </div>
-            <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
-              {travelWarnings.map(warn => (
-                <div key={warn.id} className="bg-slate-950/70 p-2.5 rounded border border-amber-950/20 hover:border-amber-500/20 cursor-pointer transition" onClick={() => handleSelectMapNode('travel', warn)}>
-                  <p className="font-bold text-gray-200 mb-0.5">{warn.region}</p>
-                  <p className="text-[10px] text-gray-400 leading-normal mb-1">Ruta segura: {warn.safeRoutes[0]}</p>
-                  <span className="text-[9px] text-rose-400 font-bold uppercase tracking-wider">{warn.status.replace('-', ' ')}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+        <section className="grid lg:grid-cols-[1fr_.8fr] gap-4 mb-8">
+          <div className="rounded-2xl border border-white/10 bg-[#090c12] p-5"><div className="flex items-center gap-2 mb-5"><Activity className="h-4 w-4 text-emerald-300" /><h3 className="font-bold">Operational log</h3></div><div className="space-y-2 max-h-48 overflow-auto font-mono text-[10px] text-slate-500">{systemLogs.map((log, i) => <div key={i} className="border-l border-white/10 pl-3">{log}</div>)}</div></div>
+          <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-400/10 to-transparent p-5"><div className="flex items-center gap-2 mb-3"><LockKeyhole className="h-4 w-4 text-emerald-300" /><h3 className="font-bold">Enterprise trust layer</h3></div><ul className="space-y-3 text-xs text-slate-400"><li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-300 shrink-0" /> Source provenance and confidence scoring.</li><li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-300 shrink-0" /> Human-in-the-loop approval for critical actions.</li><li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-300 shrink-0" /> Immutable audit events planned for production.</li><li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-300 shrink-0" /> RBAC, tenant isolation and API controls planned.</li></ul></div>
+        </section>
 
-        </div>
-      </section>
+        <section id="roadmap" className="scroll-mt-24 mb-8">
+          <div className="mb-4"><div className="text-[10px] font-mono tracking-[0.18em] text-emerald-300">03 / DELIVERY ROADMAP</div><h2 className="text-2xl md:text-3xl font-black mt-1">From demo to enterprise product</h2></div>
+          <div className="grid md:grid-cols-4 gap-3">{roadmap.map(([period,title,text], i) => <article key={period} className="rounded-2xl border border-white/10 bg-white/[0.02] p-5"><div className="text-[10px] font-mono text-emerald-300">0{i + 1}</div><div className="text-xs font-mono text-slate-500 mt-4">{period}</div><h3 className="text-lg font-bold mt-1">{title}</h3><p className="text-xs leading-5 text-slate-500 mt-2">{text}</p></article>)}</div>
+        </section>
 
-      {/* FOOTER SYSTEM CREDIT */}
-      <footer className="mt-8 text-center text-gray-600 font-mono text-[10px] border-t border-gray-950 pt-5">
-        <p>Centro Satelital dApp de Reconocimiento Global • Encriptación de enlace cuántico SHA-256</p>
-        <p className="mt-1">© 2026 Plataforma de Enjambre de Agentes de Seguridad Geopolítica</p>
-      </footer>
+        <section id="docs" className="scroll-mt-24 grid md:grid-cols-3 gap-3 mb-8">
+          {[
+            [FileText, 'Technical architecture', 'System boundaries, data contracts, agent orchestration and production controls.', 'docs/architecture.md'],
+            [Layers3, 'Investor roadmap', 'Milestones, team model, budget bands, KPIs and commercial strategy.', 'docs/roadmap.md'],
+            [Users, 'Competitive positioning', 'Decision-intelligence positioning, target customers and differentiation.', 'docs/comparison.md']
+          ].map(([Icon,title,text,path]) => <article key={title} className="rounded-2xl border border-white/10 bg-[#090c12] p-5"><Icon className="h-5 w-5 text-emerald-300" /><h3 className="font-bold mt-4">{title}</h3><p className="text-xs text-slate-500 leading-5 mt-2">{text}</p><div className="mt-4 text-[10px] font-mono text-slate-600">{path}</div></article>)}
+        </section>
 
+        <footer className="border-t border-white/10 pt-6 text-[10px] text-slate-600 flex flex-col md:flex-row justify-between gap-2"><span>SWARM INTEL PLATFORM • 2026 • Decision intelligence prototype</span><span>Demo data ≠ operational intelligence. Production requires verified sources and governance.</span></footer>
+      </main>
     </div>
   );
+}
+
+function AssetPanel({ asset }: { asset: { type: AssetType; data: any } }) {
+  const d = asset.data;
+  if (!d) return <p className="text-sm text-slate-500">No event selected.</p>;
+  if (asset.type === 'war') return <Info title={d.name} accent="text-rose-300"><p>{d.description}</p><Metric label="Severity" value={d.severity} /><Metric label="Economic impact" value={d.economicImpact} /><Metric label="Parties" value={d.parties.join(' vs ')} /></Info>;
+  if (asset.type === 'cable') return <Info title={d.name} accent="text-sky-300"><Metric label="Status" value={d.status} /><Metric label="Capacity" value={d.speed} /><Metric label="Landing points" value={d.landingPoints.join(' • ')} /><p>{d.riskFactor}</p></Info>;
+  if (asset.type === 'earthquake') return <Info title={d.location} accent="text-violet-300"><Metric label="Magnitude" value={String(d.magnitude)} /><Metric label="Depth" value={d.depthStr} /><Metric label="Timestamp" value={d.timestamp} /><p>{d.climateImpact}</p></Info>;
+  if (asset.type === 'climate') return <Info title={d.name} accent="text-pink-300"><Metric label="Type" value={d.type} /><Metric label="Severity" value={d.severity} /><p>{d.statusDescription}</p></Info>;
+  return <Info title={d.region} accent="text-amber-300"><Metric label="Risk" value={d.status} /><Metric label="Type" value={d.riskType} /><Metric label="Routes" value={d.safeRoutes.join(' • ')} /></Info>;
+}
+
+function Info({ title, accent, children }: { title: string; accent: string; children: React.ReactNode }) {
+  return <div className="space-y-4 text-xs leading-5 text-slate-400"><h3 className={'text-base font-bold ' + accent}>{title}</h3>{children}</div>;
+}
+function Metric({ label, value }: { label: string; value: string }) {
+  return <div className="rounded-xl border border-white/5 bg-black/20 p-3"><div className="text-[9px] uppercase tracking-wider text-slate-600">{label}</div><div className="text-xs text-slate-200 mt-1">{value}</div></div>;
 }
