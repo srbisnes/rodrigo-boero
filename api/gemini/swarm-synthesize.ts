@@ -1,28 +1,46 @@
 import { GoogleGenAI } from '@google/genai';
+import { buildSwarmPrompt, normalizeSwarmResult, validateSwarmRequest, type SwarmAgentInput } from '../../src/lib/swarm';
 
-export default {
-  async fetch(request: Request) {
-    if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
-    const body = await request.json().catch(() => ({}));
-    const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
-    const agents = Array.isArray(body.agents) ? body.agents : [];
-    if (!prompt || !agents.length) return Response.json({ success: false, error: 'Prompt and agents list are required.' }, { status: 400 });
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) return Response.json({ success: false, error: 'GEMINI_API_KEY is not configured.' }, { status: 503 });
-    const client = new GoogleGenAI({ apiKey: key });
-    const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
-    const analyses = await Promise.all(agents.map(async (agent: any) => {
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+
+export default async function handler(req: any, res: any) {
+  if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
+
+  const { prompt, agents } = req.body ?? {};
+  const validationError = validateSwarmRequest(prompt, agents);
+  if (validationError) return res.status(400).json({ success: false, error: validationError });
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return res.status(503).json({ success: false, error: 'GEMINI_API_KEY is not configured.' });
+
+  const client = new GoogleGenAI({ apiKey });
+  const results = await Promise.all(
+    (agents as SwarmAgentInput[]).map(async (agent) => {
       try {
         const response = await client.models.generateContent({
-          model,
-          contents: 'Analyze this risk scenario: "' + prompt + '". Return three concise decision-relevant findings. Explicitly mark uncertainty.',
-          config: { systemInstruction: agent.systemInstruction || 'You are a specialist risk analyst.', temperature: 0.3 }
+          model: MODEL,
+          contents: buildSwarmPrompt(prompt),
+          config: {
+            systemInstruction: agent.systemInstruction || 'Eres un analista de riesgo. Responde en español.',
+            temperature: 0.3,
+          },
         });
-        return { agentId: agent.id, agentName: agent.name, role: agent.role, text: response.text || '', timestamp: new Date().toISOString() };
-      } catch (_error) {
-        return { agentId: agent.id, agentName: agent.name, role: agent.role, text: '[Agent unavailable]', timestamp: new Date().toISOString() };
+        return normalizeSwarmResult(agent, response.text || '', true);
+      } catch (error: any) {
+        const message = error?.message || 'Agent provider error';
+        console.error('Swarm agent error', { agentId: agent.id, message });
+        return normalizeSwarmResult(agent, '', false, message);
       }
-    }));
-    return Response.json({ success: true, model, analyses });
-  }
-};
+    }),
+  );
+
+  const successful = results.filter((result) => result.ok).length;
+  return res.status(successful > 0 ? 200 : 502).json({
+    success: successful > 0,
+    partial: successful > 0 && successful < results.length,
+    model: MODEL,
+    analyses: results,
+    summary: { total: results.length, successful, failed: results.length - successful },
+    ...(successful === 0 ? { error: 'All swarm agents failed.' } : {}),
+  });
+}
