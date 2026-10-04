@@ -4,6 +4,14 @@ import { validateAgentQuery } from '../../src/lib/swarm';
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 export default async function handler(req: any, res: any) {
+  if (req.method === 'GET') {
+    return res.status(200).json({
+      ok: true,
+      service: 'alerta-mundial-gemini-query',
+      model: MODEL,
+      configured: Boolean(process.env.GEMINI_API_KEY),
+    });
+  }
   if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
 
   const { systemInstruction, prompt } = req.body ?? {};
