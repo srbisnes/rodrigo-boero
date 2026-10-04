@@ -1,63 +1,43 @@
 # Competitive Positioning
 
-## Category
+| Capability | News platforms | Market terminals | Risk consultancies | Generic dashboards | Alerta Mundial |
+|---|---:|---:|---:|---:|---:|
+| Global news | High | Medium | High | Medium | High |
+| Markets | Low | High | Medium | Medium | High |
+| Geospatial risk | Low | Medium | High | High | High |
+| Operations classification | Low | Medium | High | Low | High |
+| X/social consensus | Medium | Low | Medium | Low | Target: High |
+| AI specialist swarm | Low | Low | Low | Low | Core |
+| Evidence/provenance | Medium | High | High | Low | Core |
+| Customer dependency graph | Low | Low | High | Low | Target: Core |
+| Mobile-first workflow | Medium | Medium | Low | Medium | Core |
 
-Do not position the product as a generic “geopolitical map”.
+## Positioning
 
-Position it as:
+Alerta Mundial sits between:
 
-> **AI-assisted decision intelligence for organizations exposed to external risk.**
+**Bloomberg-style market intelligence**
++
+**geopolitical/risk intelligence**
++
+**modern command-center UX**
++
+**AI analyst workflows**
 
-## Competitive matrix
+It should not attempt to replace every incumbent.
 
-| Capability | Generic dashboards | News / OSINT tools | Risk consultants | Swarm Intel |
-|---|---:|---:|---:|---:|
-| Multi-source ingestion | Medium | High | Medium | High |
-| Cross-domain correlation | Low | Medium | High | High |
-| Specialist AI reasoning | Low | Low | Medium | High |
-| Evidence/provenance model | Medium | Medium | High | Target: High |
-| Scenario workflow | Low | Medium | High | Target: High |
-| Human approval | Low | Low | High | High |
-| Enterprise API | Medium | High | Low | Target: High |
-| Agent orchestration | Low | Low | Low | Core |
-| Custom customer workflows | Medium | Low | High | Core |
+The wedge is **cross-domain correlation for operational decisions**.
 
-## Wedge
+## First use case
 
-The first wedge should be a narrow workflow where the economic value is obvious:
+> “Show me the external events that could materially disrupt my operation in the next 24–72 hours, explain the evidence, and tell me what deserves attention first.”
 
-**“What external events could disrupt my operations in the next 24–72 hours, and what should my team investigate first?”**
+## Defensibility
 
-Potential vertical wedges:
-
-- maritime/logistics;
-- critical infrastructure;
-- insurance;
-- commodities;
-- multinational operations.
-
-## Differentiation
-
-The moat should not be the visual map.
-
-The moat becomes:
-
-1. normalized proprietary event schema;
-2. customer-specific dependency graph;
-3. evaluation datasets;
-4. historical decision outcomes;
-5. source reliability scores;
-6. agent orchestration;
-7. workflow integrations.
-
-## What not to claim
-
-Avoid claims such as:
-
-- “predicts wars”;
-- “guarantees intelligence accuracy”;
-- “real-time” without verified feeds;
-- “military-grade” without independent evidence;
-- “quantum encrypted” unless a real quantum-safe implementation exists.
-
-Enterprise trust is built by precision of claims.
+- data contracts;
+- source reliability;
+- event graph;
+- customer-specific dependencies;
+- evaluation corpus;
+- workflow history;
+- integrations.
