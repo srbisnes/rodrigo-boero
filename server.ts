@@ -37,7 +37,7 @@ async function startServer() {
     setTimeout(() => {
       const name = operatorNames[Math.floor(Math.random() * operatorNames.length)];
       const phrase = operatorPhrases[Math.floor(Math.random() * operatorPhrases.length)];
-      chatMessages = [...chatMessages, { id: 'm_sim_' + Date.now(), sender: name, role: 'operator', text: phrase, timestamp: new Date().toISOString(), avatarColor: 'bg-indigo-600' }].slice(-50);
+      chatMessages = [...chatMessages, { id: 'm_sim_' + Date.now(), sender: name, role: 'operator' as const, text: phrase, timestamp: new Date().toISOString(), avatarColor: 'bg-indigo-600' }].slice(-50);
     }, 900);
     res.json({ success: true, message });
   });
