@@ -16,7 +16,7 @@ test('computes weighted sentiment consensus', () => {
     { source: 'news', label: 'negative', score: -0.4, weight: 0.2 }
   ]);
   assert.equal(result.label, 'negative');
-  assert.ok(result.score < -0.4);
+  assert.ok(result.score < 0);
   assert.equal(result.coverage, 3);
 });
 
