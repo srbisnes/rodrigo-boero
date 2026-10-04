@@ -1,131 +1,173 @@
-# Enterprise Roadmap — 6 / 12 / 18 months
+# Alerta Mundial — Roadmap de Implementación
 
-## Strategic objective
+## Objective
 
-Transform the current demonstration into a B2B decision-intelligence SaaS for organizations exposed to geopolitical, infrastructure, supply-chain and macroeconomic risk.
+Move from an interactive decision-intelligence prototype to a production mobile-first intelligence SaaS.
 
-## Team model — 5 people
+## Team of 5
 
-| Role | Focus |
+| Role | Responsibility |
 |---|---|
-| Product / CEO | customer discovery, partnerships, fundraising |
+| Product / CEO | vertical strategy, pilots, fundraising |
 | Tech Lead | architecture, backend, security |
-| Frontend / UX | command center, workflows, accessibility |
-| Data / AI Engineer | ingestion, agents, evaluation |
-| Full-stack / DevOps | integrations, CI/CD, observability |
+| Frontend / Mobile | command center, PWA/mobile |
+| Data + AI | ingestion, scoring, agents, evaluation |
+| Data/DevOps | connectors, observability, infrastructure |
 
-## 0–3 months — Foundation
+## 0–3 months — Production foundation
 
-### Milestones
-- production data model;
-- 3–5 real source adapters;
-- persistent PostgreSQL layer;
-- authentication + RBAC;
-- audit trail;
-- agent evaluation harness;
-- observability;
-- first design partner.
+### Product
+- mobile-first command center;
+- watchlists;
+- risk heatmap;
+- saved investigations;
+- alert configuration.
+
+### Engineering
+- PostgreSQL;
+- OIDC;
+- RBAC;
+- canonical events;
+- source adapter SDK;
+- queue;
+- audit log;
+- monitoring.
+
+### Data
+- 3–5 verified providers;
+- market feed;
+- news feed;
+- seismic/weather feed;
+- first X integration.
 
 ### Exit criteria
-- reproducible deployment;
-- source provenance visible in UI;
-- p95 API latency target defined;
-- agent evaluation baseline;
-- first customer workflow documented.
+- 99.5% service availability target;
+- >95% events with provenance;
+- reproducible deployments;
+- automated tests;
+- first production design partner.
 
-### Indicative budget
-**US$30k–45k** for a five-person lean team plus infrastructure, security and customer-development expenses.
+## 3–6 months — Commercial pilot
 
-## 3–6 months — Pilot
+### Product
+- real-time alerts;
+- push notifications;
+- executive brief;
+- sentiment timeline;
+- correlation graph;
+- scenario comparison.
 
-### Milestones
+### Customers
 - 2–3 design partners;
-- alerting;
-- saved investigations;
-- evidence export;
-- customer workspaces;
-- source freshness monitoring;
-- human approval workflow.
+- at least one logistics/maritime customer;
+- at least one financial/risk customer.
 
-### Commercial target
-Paid pilot contracts rather than vanity user counts.
-
-Indicative target: **US$2k–8k MRR** depending on pilot scope.
+### KPI
+- time-to-detection;
+- time-to-decision;
+- alert precision;
+- analyst time saved;
+- weekly active analysts.
 
 ## 6–12 months — Enterprise
 
-### Milestones
-- multi-tenant SaaS;
-- enterprise SSO;
+### Platform
+- multi-tenancy;
+- SSO;
 - granular RBAC;
-- API and webhooks;
-- SLA monitoring;
+- API;
+- webhooks;
 - billing;
-- premium data connectors;
-- formal security review.
+- SLA dashboards.
 
-### Commercial target
-**5–15 paying organizations** with expansion revenue.
+### Intelligence
+- proprietary risk index;
+- source reliability score;
+- cross-agent disagreement;
+- customer dependency graph;
+- historical event replay.
+
+### Commercial
+Target 5–15 paying organizations, depending on contract size and vertical.
 
 ## 12–18 months — Scale
 
-### Milestones
-- proprietary risk score;
+- native mobile wrapper;
+- regional data partnerships;
 - scenario simulation;
 - agent marketplace;
-- partner ecosystem;
-- regional expansion;
-- enterprise integrations;
-- model routing and cost optimization.
+- partner API;
+- customer-specific models;
+- enterprise private deployment.
 
-### Commercial target
-Move from project revenue to recurring platform revenue.
+## Budget framework
 
-## Funding logic
+For a five-person lean team:
 
-The first capital should buy evidence of product-market fit, not simply more code.
+### 0–3 months
+**US$35k–50k**
 
-Priority of spend:
+Engineering, data access, infrastructure, security, legal and customer discovery.
 
-1. engineering capacity;
-2. source/data access;
-3. security and reliability;
-4. customer acquisition and pilots;
-5. legal/compliance;
-6. events/partnerships.
+### 3–6 months
+**US$45k–70k**
 
-## KPI tree
+Pilot delivery, connectors, mobile, reliability and commercial deployment.
 
-### Product
-- source freshness;
-- alert precision;
-- false-positive rate;
-- analyst time saved;
-- time-to-decision;
-- active workspaces.
+### 6–12 months
+**US$90k–150k**
 
-### Business
-- pilots;
-- MRR / ARR;
-- conversion;
-- expansion;
-- retention;
-- CAC;
-- gross margin.
+Enterprise engineering, SSO, data licensing, support and sales.
 
-### AI
-- cost per investigation;
-- latency;
-- agent agreement/disagreement;
-- citation/evidence coverage;
-- human override rate.
+### 12–18 months
+Fund from a combination of recurring revenue + growth capital.
 
-## Milestone-based funding
+## Milestone financing
 
-Recommended structure:
+1. **Tranche A:** production foundation.
+2. **Tranche B:** paid pilots.
+3. **Tranche C:** enterprise scale.
 
-- **Tranche 1:** foundation and productionization.
-- **Tranche 2:** pilots and validated workflows.
-- **Tranche 3:** enterprise scale after measurable commercial evidence.
+Capital should be released against technical and commercial evidence.
 
-This aligns investor capital with independently verifiable outcomes.
+## Go-to-market
+
+### Beachhead 1 — Maritime / logistics
+Pain:
+- route disruption;
+- port risk;
+- weather;
+- energy exposure;
+- insurance.
+
+### Beachhead 2 — Financial risk
+Pain:
+- market-moving events;
+- geopolitical exposure;
+- commodity shocks;
+- sentiment changes.
+
+### Beachhead 3 — Enterprise operations
+Pain:
+- employee travel;
+- suppliers;
+- infrastructure;
+- regional disruption.
+
+## Product flywheel
+
+```
+More verified events
+      ↓
+Better correlations
+      ↓
+Better agent evaluations
+      ↓
+Better customer decisions
+      ↓
+More usage
+      ↓
+More historical outcomes
+      ↓
+Proprietary risk intelligence
+```
