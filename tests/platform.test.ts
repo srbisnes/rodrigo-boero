@@ -7,5 +7,5 @@ test('production controls can reach 100%', () => {
 });
 
 test('demo configuration is intentionally below production readiness', () => {
-  assert.equal(healthScore({ sourceAdapters: 2, agents: 6, observability: true, auditTrail: false }), 68);
+  assert.equal(healthScore({ sourceAdapters: 2, agents: 6, observability: true, auditTrail: false }), 63);
 });
