@@ -32,7 +32,7 @@ async function startServer() {
   app.post('/api/chat/messages', (req, res) => {
     const { sender, text, role } = req.body;
     if (typeof text !== 'string' || !text.trim()) return res.status(400).json({ error: 'Text is required' });
-    const message: ChatMessage = { id: 'm_' + Date.now(), sender: typeof sender === 'string' ? sender : 'Anonymous', role: role || 'user', text: text.trim(), timestamp: new Date().toISOString(), avatarColor: 'bg-emerald-600' };
+    const message: ChatMessage = { id: 'm_' + Date.now(), sender: typeof sender === 'string' ? sender : 'Anonymous', role: role === 'operator' || role === 'system' || role === 'agent' ? role : 'user', text: text.trim(), timestamp: new Date().toISOString(), avatarColor: 'bg-emerald-600' };
     chatMessages = [...chatMessages, message].slice(-50);
     setTimeout(() => {
       const name = operatorNames[Math.floor(Math.random() * operatorNames.length)];
