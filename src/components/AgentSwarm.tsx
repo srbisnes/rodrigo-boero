@@ -87,7 +87,7 @@ export default function AgentSwarm({ agents, onAddSystemLogMsg }: AgentSwarmProp
         id: `err_${Date.now()}`,
         sender: 'DISPOSITIVO DE SEGURIDAD',
         role: 'system',
-        text: `Error de canal cuántico: ${err.message}. Verifique la configuración de secreto de su API.`,
+        text: `Error de canal seguro: ${err.message}. Verifique la configuración de secreto de su API.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setAgentChats(prev => ({
@@ -199,7 +199,7 @@ export default function AgentSwarm({ agents, onAddSystemLogMsg }: AgentSwarmProp
               <span className={`w-2.5 h-2.5 rounded-full ${selectedAgent.avatarColor} animate-pulse`} />
               <div>
                 <h5 className="text-xs font-mono font-bold text-emerald-400">{selectedAgent.name}</h5>
-                <p className="text-[9px] text-gray-500 font-mono">Canal Encriptado • Directo</p>
+                <p className="text-[9px] text-gray-500 font-mono">Canal seguro • Directo</p>
               </div>
             </div>
             <Terminal className="w-3.5 h-3.5 text-gray-600" />
