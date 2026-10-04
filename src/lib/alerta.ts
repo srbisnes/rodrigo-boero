@@ -9,9 +9,9 @@ export type HeatBucket = 'critical' | 'high' | 'elevated' | 'watch' | 'low';
 
 export function classifyOperation(text: string): 'LOGISTICS' | 'MARKET' | 'INFRASTRUCTURE' | 'NATURAL' | 'GEOPOLITICAL' {
   const value = text.toLowerCase();
-  if (/cable|port|shipping|vessel|freight|route|container|maritime|logistic/.test(value)) return 'LOGISTICS';
+  if (/fiber|internet|grid|pipeline|power|satellite|telecom|infrastructure|cable outage/.test(value)) return 'INFRASTRUCTURE';
+  if (/port|shipping|vessel|freight|route|container|maritime|logistic/.test(value)) return 'LOGISTICS';
   if (/market|central bank|liquidity|oil|gold|bitcoin|crypto|commodity|yield|currency/.test(value)) return 'MARKET';
-  if (/fiber|internet|grid|pipeline|power|satellite|telecom|infrastructure/.test(value)) return 'INFRASTRUCTURE';
   if (/earthquake|storm|flood|cyclone|tsunami|heatwave|volcan/.test(value)) return 'NATURAL';
   return 'GEOPOLITICAL';
 }
